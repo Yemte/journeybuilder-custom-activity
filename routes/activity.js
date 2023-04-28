@@ -2,6 +2,7 @@ const { v1: Uuidv1 } = require('uuid');
 const JWT = require('../utils/jwtDecoder');
 const SFClient = require('../utils/sfmc-client');
 const logger = require('../utils/logger');
+const encrypt = require('../utils/encrypt')
 
 /**
  * The Journey Builder calls this method for each contact processed by the journey.
@@ -17,16 +18,31 @@ exports.execute = async (req, res) => {
 
   try {
     const id = Uuidv1();
+    const amount = data.inArguments[0].Amount;
+    const fname = data.inArguments[0].Firstname; 
+    const lname= data.inArguments[0].Lastname;
+    const rluid= data.inArguments[0].RelationUid;
+
+    const jsnob = {
+        "amount":{"amount":amount,"currencyCode":"EUR"},
+        "customer":{"firstName": fname,"lastName":lname,"relationUid":rluid}
+       /* "language":language,
+        "productInfo":{"productCode":pcode,"productUid":puid,"referenceNumber":loanId},
+        "tracking":{"countryCode":cc,"entityUid":entity}*/
+        }
+
+      const jsntext = JSON.stringify(jsnob)
+ 
+      const entxt= encrypt.encryptdjsn(jsntext);
 
     await SFClient.saveData(process.env.DATA_EXTENSION_EXTERNAL_KEY, [
       {
         keys: {
           Id: id,
-          SubscriberKey: data.inArguments[0].contactKey,
+          dmCustomerID : data.inArguments[0].contactKey,
         },
         values: {
-          Event: data.inArguments[0].DropdownOptions,
-          Text: data.inArguments[0].Text,
+          encryptedText: entxt,
         },
       },
     ]);
