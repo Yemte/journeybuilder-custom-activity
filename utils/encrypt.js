@@ -9,4 +9,4 @@ var iv = CryptoJS.enc.Utf8.parse("Password");
          iv: iv,padding:CryptoJS.pad.Pkcs7,mode:CryptoJS.mode.CBC 
     }).ciphertext.toString(CryptoJS.enc.Base64);
 }
-module.exports = encryptdjsn(enctext);
+module.exports = encryptdjsn
